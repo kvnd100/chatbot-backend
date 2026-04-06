@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule,ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -19,7 +20,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       database: configService.get('DB_NAME'),
       autoLoadEntities: true,
     }),
-  })],
+  }),
+  ChatModule,
+],
   controllers: [AppController],
   providers: [AppService],
 })
