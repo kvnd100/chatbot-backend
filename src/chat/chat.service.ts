@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ConversationEntity } from './conversation/entities/conversaton.entity';
+import { ConversationEntity } from './entities/conversaton.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { MessageEntity, MessageRole } from './message/entities/message.entity';
+import { MessageEntity, MessageRole } from './entities/message.entity';
 
 @Injectable()
 export class ChatService {

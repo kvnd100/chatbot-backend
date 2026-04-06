@@ -1,4 +1,4 @@
-import { ConversationEntity } from 'src/chat/conversation/entities/conversaton.entity';
+import { ConversationEntity } from 'src/chat/entities/conversaton.entity';
 import { MessageRole } from 'src/chat/enums/message-role.enum';
 import {
   Column,

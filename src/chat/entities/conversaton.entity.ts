@@ -1,4 +1,4 @@
-import { MessageEntity } from 'src/chat/message/entities/message.entity';
+import { MessageEntity } from 'src/chat/entities/message.entity';
 import {
   Column,
   CreateDateColumn,
