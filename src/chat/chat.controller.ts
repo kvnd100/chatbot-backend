@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseUUIDPipe,
+  Post,
+} from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { CreateMessageDto } from './dto/create-message.dto';
@@ -18,17 +25,20 @@ export class ChatController {
   }
 
   @Get('conversation/:id')
-  async getConversation(@Param('id') id: string) {
+  async getConversation(@Param('id', ParseUUIDPipe) id: string) {
     return await this.chatService.getConversation(id);
   }
 
   @Get('conversation/:id/messages')
-  async getMessages(@Param('id') id: string) {
+  async getMessages(@Param('id', ParseUUIDPipe) id: string) {
     return await this.chatService.getMessages(id);
   }
 
   @Post('conversation/:id/messages')
-  async createMessage(@Param('id') id: string, @Body() body: CreateMessageDto) {
+  async createMessage(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: CreateMessageDto,
+  ) {
     return await this.chatService.createMessage(id, body.content, body.role);
   }
 }
