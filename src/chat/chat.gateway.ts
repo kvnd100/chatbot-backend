@@ -13,6 +13,7 @@ import { ChatService } from './chat.service';
 import { ValidationPipe } from '@nestjs/common';
 import { SendMessageDto } from './dto/send-message.dto';
 import { WsExceptionFilter } from 'src/common/filters/ws-exception.filter';
+import { ConversationRoomDto } from './dto/conversation-room.dto';
 
 @UseFilters(new WsExceptionFilter())
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
@@ -35,7 +36,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('joinConversation')
   async handleJoinConversation(
-    @MessageBody() data: { conversationId: string },
+    @MessageBody() data: ConversationRoomDto,
     @ConnectedSocket() client: Socket,
   ) {
     await client.join(data.conversationId);
@@ -58,5 +59,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
     this.server.to(data.conversationId).emit('newMessage', message);
     return message;
+  }
+
+  @SubscribeMessage('leaveConversation')
+  async handleLeaveConversation(
+    @MessageBody() data: ConversationRoomDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    await client.leave(data.conversationId);
+    this.logger.log(
+      `Client ${client.id} left conversation: ${data.conversationId}`,
+    );
   }
 }

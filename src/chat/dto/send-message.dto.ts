@@ -4,7 +4,6 @@ import { MessageRole } from '../enums/message-role.enum';
 
 export class SendMessageDto {
   @IsUUID()
-  @IsNotEmpty()
   conversationId: string;
 
   @Transform(({ value }: { value: unknown }): unknown =>
