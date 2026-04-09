@@ -12,10 +12,13 @@ export class AiService {
     });
   }
 
-  async getChatCompletion(messages: OpenAI.ChatCompletionMessageParam[]) {
+  async getChatCompletion(
+    messages: OpenAI.ChatCompletionMessageParam[],
+    systemPrompt = 'You are a helpful learning assistant.',
+  ) {
     const completion = await this.openai.chat.completions.create({
       model: 'gpt-4o',
-      messages,
+      messages: [{ role: 'system', content: systemPrompt }, ...messages],
     });
     return completion.choices[0].message.content ?? '';
   }

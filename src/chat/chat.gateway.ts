@@ -14,6 +14,9 @@ import { ValidationPipe } from '@nestjs/common';
 import { SendMessageDto } from './dto/send-message.dto';
 import { WsExceptionFilter } from 'src/common/filters/ws-exception.filter';
 import { ConversationRoomDto } from './dto/conversation-room.dto';
+import { AiService } from 'src/ai/ai.service';
+import { MessageRole } from './enums/message-role.enum';
+import { MessageEntity } from './entities/message.entity';
 
 @UseFilters(new WsExceptionFilter())
 @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
@@ -24,7 +27,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private readonly logger = new Logger(ChatGateway.name);
 
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly aiService: AiService,
+  ) {}
 
   handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
@@ -44,6 +50,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       `Client ${client.id} joined conversation: ${data.conversationId}`,
     );
   }
+  @SubscribeMessage('getHistory')
+  async handleGetHistory(@MessageBody() data: ConversationRoomDto) {
+    const history = await this.chatService.getMessages(data.conversationId);
+    return history;
+  }
 
   @SubscribeMessage('sendMessage')
   async handleMessage(
@@ -58,7 +69,24 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       data.role,
     );
     this.server.to(data.conversationId).emit('newMessage', message);
-    return message;
+
+    const history = await this.chatService.getMessages(data.conversationId);
+
+    const openAiMessages = history.map((msg: MessageEntity) => ({
+      role: msg.role,
+      content: msg.content,
+    }));
+
+    const response = await this.aiService.getChatCompletion(openAiMessages);
+
+    const aiMessage = await this.chatService.createMessage(
+      data.conversationId,
+      response,
+      MessageRole.ASSISTANT,
+    );
+
+    this.server.to(data.conversationId).emit('newMessage', aiMessage);
+    return { message, aiMessage };
   }
 
   @SubscribeMessage('leaveConversation')
